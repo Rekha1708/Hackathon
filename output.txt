@@ -1,0 +1,20 @@
+"""
+Created on Thu Mar 05 06:27:34 2020
+
+@author: HP
+0"""
+import serial
+import time
+import trial
+arduino = serial.Serial('com5',9600) #Create Serial port object called arduinoSerialData
+time.sleep(2)
+y=trial.on()
+if y==1:
+    arduino.write('1') #send 1
+    print ("LED turned ON")
+    time.sleep(1)
+if (y ==0): #if the value is 
+    arduino.write('0') #send 0
+    print ("LED turned OFF")
+    time.sleep(1)
+    

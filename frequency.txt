@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar 05 06:28:06 2020
+
+@author: HP
+"""
+
+import pyaudio
+import wave
+
+import numpy as np
+
+chunk = 2048
+freq=[]
+
+wf = wave.open('C:\\Users\\HP\\Downloads\\data set\\1.wav', 'rb')
+swidth = wf.getsampwidth()
+RATE = wf.getframerate()
+
+window = np.blackman(chunk)
+
+p = pyaudio.PyAudio()
+stream = p.open(format =
+                p.get_format_from_width(wf.getsampwidth()),
+                channels = wf.getnchannels(),
+                rate = RATE,
+                output = True)
+
+data = wf.readframes(chunk)
+
+while len(data) == chunk*swidth:
+    
+    stream.write(data)
+    
+    indata = np.array(wave.struct.unpack("%dh"%(len(data)/swidth),\
+                                         data))*window
+                                    
+    fftData=abs(np.fft.rfft(indata))**2
+    
+    which = fftData[1:].argmax() + 1
+    
+    if which != len(fftData)-1:
+        y0,y1,y2 = np.log(fftData[which-1:which+2:])
+        if(y1==0):
+            continue
+        x1 = (y2 - y0) * .5 / (2 * y1 - y2 - y0)
+        
+        thefreq = (which+x1)*RATE/chunk
+        
+        print "The freq is %f Hz." % (thefreq)
+        freq.append(thefreq)
+    else:
+        thefreq = which*RATE/chunk
+        print "The freq is %f Hz." % (thefreq)
+        freq.append(thefreq)
+        
+    
+    data = wf.readframes(chunk)
+if data:
+    stream.write(data)
+stream.close()
+p.terminate()      
+
+
+count=0    
+for i in range(0,len(freq)):
+    if(freq[i]>200 and freq[i]<500):
+        count+=1
+
+def on():
+    if(count>=(len(freq)/1.5)):
+        print("Yes! Tree cutting sound")
+        y=1
+    else:
+        print("No.An animal sound")
+        y=0
+        
+    return y                        
